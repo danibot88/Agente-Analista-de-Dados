@@ -1,4 +1,4 @@
-﻿"""Acesso ao Ollama e interpretação da resposta estruturada."""
+"""Acesso ao Ollama e interpretação da resposta estruturada."""
 import json
 
 
@@ -17,7 +17,7 @@ class ClienteOllama:
     def gerar_sql(self, mensagens):
         schema = {
             'type': 'object',
-            'properties': {'sql': {'type': 'string'}, 'explicacao': {'type': 'string'}},
+            'properties': {'sql': {'type': 'string'}, 'explicacao': {'type': 'string'}, 'acao': {'type': 'string', 'enum': ['sql', 'somar_por_moeda', 'contar_por_data', 'impossivel']}, 'coluna': {'type': 'string'}, 'moeda': {'type': 'string'}, 'decimal': {'type': 'string'}},
             'required': ['sql', 'explicacao'],
         }
         try:
@@ -25,7 +25,11 @@ class ClienteOllama:
                                          format=schema, options={'temperature': 0})
             raw = response.message.content or '{}'
             result = json.loads(raw)
-            if not isinstance(result, dict):
+            if (not isinstance(result, dict)
+                    or not isinstance(result.get('sql'), str)
+                    or not isinstance(result.get('explicacao'), str)
+                    or result.get('acao', 'sql') not in ('sql', 'somar_por_moeda', 'contar_por_data', 'impossivel')
+                    or any(key in result and not isinstance(result[key], str) for key in ('coluna', 'moeda', 'decimal'))):
                 raise ValueError('Resposta não é um objeto')
             query = str(result.get('sql', '')).strip().rstrip(';').strip()
             explanation = str(result.get('explicacao', ''))

@@ -106,9 +106,16 @@ class ServicosTests(unittest.TestCase):
         self.assertEqual(3, len(modelo.mensagens))
 
     def test_sql_vazio_retorna_aviso(self):
-        resultado = analisar(self.dados, 'Pergunta', ModeloFalso(['']))
+        resultado = analisar(self.dados, 'Pergunta', ModeloFalso([''] * 3))
         self.assertTrue(resultado.aviso)
         self.assertIsNone(resultado.dados)
+
+    def test_modelo_sem_sql_pode_corrigir_na_tentativa_seguinte(self):
+        modelo = ModeloFalso(['', 'SELECT COUNT(*) AS total FROM uploaded_data'])
+        resultado = analisar(self.dados, 'Quantas linhas?', modelo)
+        self.assertEqual(2, resultado.dados.iloc[0]['total'])
+        self.assertEqual('SELECT COUNT(*) AS total FROM uploaded_data', resultado.sql)
+        self.assertIn('campo sql está vazio', modelo.mensagens[1][-1]['content'])
 
     def test_parser_e_acesso_externo(self):
         with ExecutorSQL(self.dados) as executor:
@@ -126,7 +133,7 @@ class ServicosTests(unittest.TestCase):
                 conexao.extract_statements.return_value = [types.SimpleNamespace(type=duckdb.StatementType.SELECT)]
                 conexao.execute.return_value.df.return_value = self.dados
             modelo = ModeloFalso([resposta] * 3)
-            with self.subTest(resposta=str(resposta)), patch('dataagent.sql.duckdb.connect', return_value=conexao):
+            with self.subTest(resposta=str(resposta)), patch('dataagent.sql.duckdb.connect', return_value=conexao), patch('dataagent.analise.validar_sql_simples'):
                 if resposta == 'SELECT * FROM uploaded_data':
                     analisar(self.dados, 'Pergunta', modelo)
                 else:
@@ -146,7 +153,7 @@ class ServicosTests(unittest.TestCase):
     def test_resposta_modelo_invalida_e_falha_de_comunicacao(self):
         cliente = ClienteOllama.__new__(ClienteOllama)
         cliente.cliente = MagicMock()
-        for resposta in ['{invalido', '[]']:
+        for resposta in ['{invalido', '[]', '{}', '{"sql": 123, "explicacao": ""}', '{"sql": "", "explicacao": "", "acao": "outra"}']:
             cliente.cliente.chat.return_value = types.SimpleNamespace(message=types.SimpleNamespace(content=resposta))
             with self.subTest(resposta=resposta), self.assertRaises(ErroModelo):
                 cliente.gerar_sql([])

@@ -57,10 +57,27 @@ O resultado esperado é **Café: 220,50** e **Chá: 80,00**.
 - Para CSV, é possível ajustar o separador, a codificação e o separador decimal.
 - O perfil examina as primeiras 1.000 linhas e 50 colunas, mostrando tipos, ausências, resumos e possíveis números ou datas em texto. Esses indícios não alteram os dados nem garantem que a conversão seja correta. Nomes no perfil são limitados a 100 caracteres.
 - O perfil fica em uma seção recolhida na interface e ainda não é enviado ao modelo. Em uma etapa futura, amostras e estatísticas selecionadas poderão ser enviadas ao Ollama local, com limites informados.
-- O modelo recebe a pergunta e os nomes e tipos das colunas para gerar uma consulta SQL. Cada pergunta é independente, sem histórico de conversa.
+- Cada pergunta é independente. A consulta gerada é limitada a projeções, contagens e agregações simples, com filtros textuais diretos e sem conversões arbitrárias; solicitações incompatíveis podem ser recusadas.
 - As consultas são executadas em um banco DuckDB em memória. O aplicativo limita a exibição a 1.000 linhas de resultado.
 - A IA pode cometer erros; confira a consulta exibida e valide resultados importantes, especialmente números e datas.
 - O `.gitignore` exclui planilhas e CSVs locais por padrão, com exceção de `exemplo.csv`, para ajudar a evitar a inclusão acidental de dados privados no Git.
+
+## Conversões e moedas
+
+Os dois planos de conversão ainda não implementam filtros. Para impedir que uma pergunta filtrada seja executada sobre a tabela inteira, eles só são executados com um dos comandos exatos abaixo; ajuste os nomes e o separador, mantendo as aspas duplas:
+
+```text
+somar "valor" por "moeda" decimal "." em todas as linhas
+contar por data "data" em todas as linhas
+```
+
+Esses comandos são interpretados pelo aplicativo, sem depender do modelo. Perguntas livres ou filtradas que gerem esses planos são recusadas. Consultas SQL simples continuam usando o modelo: a validação de segurança não garante que o SQL expresse corretamente todos os filtros pedidos em linguagem natural; confira a consulta exibida.
+
+Para somar uma coluna monetária em texto, o plano controlado exige uma única coluna de moeda reconhecida (`currency`, `moeda`, `currency_code` ou `codigo_moeda`) e um separador decimal explícito. A operação usa todas as linhas, sem filtros, agrupa as moedas como aparecem e não converte câmbio. Valores com moeda ausente não são somados; identificadores repetidos não são removidos. A tabela e o aviso informam contagens de valores inválidos, ausentes e válidos sem moeda. Para valores em texto, aceitam-se até seis casas decimais e não se aceita separador de milhares; formatos diferentes são contados como inválidos. Colunas já numéricas são somadas no tipo disponível, sem aplicar o separador informado; ponto flutuante pode produzir valores aproximados e infinitos são contados como inválidos. Não há normalização de códigos de moeda.
+
+A contagem por data aceita colunas de data ou datetime já tipadas e texto no formato `AAAA-MM-DD`, mantendo ausentes e inválidos em um grupo separado. Para datetime, agrupa pelo dia e desconsidera o horário; colunas com fuso tipado usam o dia no fuso original. Objetos datetime com fuso em coluna de tipo genérico não são suportados. Essas operações usam apenas os planos controlados; conversões arbitrárias em SQL gerado são recusadas. Planos de conversão com filtros ou formatos diferentes precisam de outra abordagem. A identificação de moeda depende dos nomes reconhecidos e não compreende automaticamente todas as semânticas de uma base. Confira o SQL e os resultados; o modelo pode escolher uma coluna ou formato inadequado.
+
+Na leitura de CSV, pandas infere tipos e reconhece marcadores padrão como ausentes; esses marcadores não podem ser distinguidos depois da leitura. O limite de exibição é de 1.000 linhas; as contagens globais das conversões permanecem disponíveis mesmo se os grupos forem truncados.
 
 ## Comportamento atual e testes
 
@@ -75,3 +92,13 @@ Para executar os testes automatizados no PowerShell, após instalar as dependên
 ```
 
 Os testes usam arquivos sintéticos e o `exemplo.csv`, simulam a interface e o cliente Ollama, verificam os serviços isoladamente e executam consultas no DuckDB real. Não exigem o serviço Ollama. Eles não substituem uma verificação manual no navegador com o modelo local.
+
+Para a verificação opcional com `llama3.2:latest` no Ollama e a planilha local esperada em `dados_locais`, execute:
+
+```powershell
+$env:DATAAGENT_TESTE_OLLAMA = '1'
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p test_ollama_local.py -v
+Remove-Item Env:DATAAGENT_TESTE_OLLAMA
+```
+
+O teste lê a planilha sem modificá-la, verifica as contagens e o SQL executado e exige o arquivo e o serviço locais. Os dados são enviados ao processo Ollama conforme o perfil documentado; o teste padrão permanece independente do serviço.

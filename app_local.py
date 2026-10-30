@@ -40,6 +40,8 @@ if df.empty or len(df.columns) == 0:
 st.subheader("Prévia dos dados")
 st.dataframe(df.head(100), width="stretch")
 st.caption(f"{len(df):,} linhas e {len(df.columns)} colunas. A prévia mostra até 100 linhas; as consultas usam a tabela completa.")
+if uploaded.name.lower().endswith('.csv'):
+    st.caption('Na leitura CSV, o pandas infere tipos e reconhece células vazias e marcadores padrão como ausentes; esses marcadores não podem ser diferenciados depois da leitura.')
 st.write("Colunas:", ", ".join(map(str, df.columns)))
 
 perfil = gerar_perfil(df)
@@ -52,8 +54,8 @@ with st.expander("Perfil e qualidade dos dados", expanded=False):
     )
     st.dataframe(pd.DataFrame(perfil.colunas), width="stretch")
     st.caption(
-        "Atualmente o Ollama recebe a pergunta e os nomes e tipos das colunas, não este perfil. "
-        "Em uma etapa futura, amostras e estatísticas selecionadas poderão ser enviadas ao Ollama local."
+        "Quando usado, o Ollama local recebe a pergunta e o perfil limitado, incluindo nomes, tipos, contagens e resumos numéricos ou de datas. "
+        "O perfil não contém exemplos de texto; dados enviados ainda podem ser sensíveis."
     )
 
 with st.form("pergunta"):
@@ -71,6 +73,7 @@ if submitted:
                 st.warning(resultado.aviso)
             else:
                 st.subheader("Resultado")
+                st.caption(resultado.limitacoes)
                 st.dataframe(resultado.dados, width="stretch")
                 if resultado.truncado:
                     st.caption("Exibindo as primeiras 1.000 linhas do resultado.")

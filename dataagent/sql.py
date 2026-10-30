@@ -1,5 +1,6 @@
 ﻿"""Execução de uma consulta de leitura no DuckDB isolado."""
 import duckdb
+import pandas as pd
 
 
 MOTIVOS_CORRECAO = {
@@ -8,6 +9,7 @@ MOTIVOS_CORRECAO = {
                    'Confira tabela, colunas, funções e agregações disponíveis.'),
     'conversao': 'Uma conversão de tipos falhou. Confira a compatibilidade dos tipos usados na consulta.',
     'restricao': 'A consulta deve conter uma única instrução SELECT de leitura.',
+    'politica': 'A operação solicitada não pode ser verificada com segurança. Use um plano de conversão suportado ou explique a impossibilidade.',
     'execucao': 'A consulta não pôde ser executada. Revise os tipos e as operações utilizadas.',
 }
 
@@ -41,12 +43,15 @@ class ExecutorSQL:
     def __exit__(self, exc_type, exc, traceback):
         self.conn.close()
 
-    def executar(self, query):
+    def executar(self, query, preservar_decimal=False):
         try:
             statements = self.conn.extract_statements(query)
             if len(statements) != 1 or statements[0].type != duckdb.StatementType.SELECT:
                 raise ErroConsulta('A consulta precisa ser um único SELECT.', 'restricao')
-            return self.conn.execute('SELECT * FROM (' + query + ') AS resultado LIMIT 1001').df()
+            resultado = self.conn.execute('SELECT * FROM (' + query + ') AS resultado LIMIT 1001')
+            if preservar_decimal:
+                return pd.DataFrame(resultado.fetchall(), columns=[coluna[0] for coluna in resultado.description])
+            return resultado.df()
         except ErroConsulta:
             raise
         except duckdb.ParserException as exc:

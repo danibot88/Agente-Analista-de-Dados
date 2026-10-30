@@ -84,7 +84,7 @@ class LoadingBehaviorTests(unittest.TestCase):
         self.assertEqual(3, len(st.frames[0]))
         self.assertEqual(['produto', 'vendas', 'quantidade'], list(st.frames[1]['Coluna']))
         self.assertIn(('Perfil e qualidade dos dados', False), st.expanders)
-        self.assertTrue(any('Ollama recebe' in caption for caption in st.captions))
+        self.assertTrue(any('Ollama local recebe' in caption for caption in st.captions))
         self.assertEqual({'Café': 220.50, 'Chá': 80.0},
                          dict(zip(st.frames[2]['produto'], st.frames[2]['total'])))
 

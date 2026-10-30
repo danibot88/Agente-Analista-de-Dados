@@ -24,7 +24,7 @@ Este arquivo é o quadro de trabalho do plano aprovado. Um coordenador atualiza 
 
 ### T04 — Contexto para gerar SQL
 
-- Estado: Pendente. Dependências: T02 e T03.
+- Estado: Concluída. Dependências: T02 e T03.
 - Usar perfil limitado junto com a pergunta e um contrato estruturado na geração do SQL. Permitir que o modelo informe impossibilidade ou ambiguidade. Manter tentativas de correção limitadas.
 - Aceite: testes com cliente simulado cobrem SQL válido, resposta sem SQL, resposta inválida e falhas de consulta; acesso externo permanece desabilitado e somente uma instrução de leitura é aceita.
 
@@ -63,4 +63,8 @@ Este arquivo é o quadro de trabalho do plano aprovado. Um coordenador atualiza 
 | T02 — revisão | Codex | Mensagens de correção por categoria fixa, sem repassar a exceção bruta; teste com modelo simulado que usa o motivo e corrige na segunda tentativa. Suíte: 18 testes aprovados. Ollama real não testado. |
 | T03 | Codex | `dataagent/perfil.py`, interface, testes e documentação; `.\.venv\Scripts\python.exe -m unittest discover -s tests -v`: 22 testes aprovados; Streamlit headless: health HTTP 200. Perfil limitado a 1.000 linhas e 50 colunas. Ollama real e teste manual no navegador não executados. |
 | T03 — revisão | Codex | Perfil disponível em seção recolhida a pedido do usuário; verificação independente e limitações registradas em `docs/TESTES.md`. |
-| T04–T09 | A definir | Pendentes. |
+| T04 | Codex | Perfil limitado enviado ao modelo; SQL livre restrito e planos controlados para moeda e data; 28 testes aprovados. Planilha local conferida com cliente simulado e cálculo independente, sem alteração; limitações e verificações em `docs/TESTES.md`. Ollama real não testado. |
+| T04 — revisão em andamento | Codex | Filtros textuais e testes com Ollama real; planos de conversão sem filtro exigem comando estruturado de escopo completo e perguntas filtradas são recusadas. Restrições e verificações em `docs/TESTES.md`. |
+| T04 — tipos nativos | Codex | Planos de soma e data aceitam tipos nativos, preservam ausências e escopo sem filtro; verificações e limitações em `docs/TESTES.md`. |
+| T04 — revisão final | Codex | 44 testes automatizados aprovados; teste integrado com Ollama real aprovado para total de linhas e filtro de moeda. Conversões filtradas seguem não suportadas; testes e limitações em `docs/TESTES.md`. |
+| T05–T09 | A definir | Pendentes. |
