@@ -59,3 +59,17 @@ O resultado esperado é **Café: 220,50** e **Chá: 80,00**.
 - As consultas são executadas em um banco DuckDB em memória. O aplicativo limita a exibição a 1.000 linhas de resultado.
 - A IA pode cometer erros; confira a consulta exibida e valide resultados importantes, especialmente números e datas.
 - O `.gitignore` exclui planilhas e CSVs locais por padrão, com exceção de `exemplo.csv`, para ajudar a evitar a inclusão acidental de dados privados no Git.
+
+## Comportamento atual e testes
+
+O CSV é lido com pandas: o separador pode ser automático, `;`, `,` ou tabulação; a codificação pode ser `utf-8-sig`, `cp1252` ou `latin-1`; o separador decimal pode ser `.` ou `,`. As opções padrão são automático, `utf-8-sig` e `.`. O XLSX é lido pela primeira aba, com `openpyxl`, sem opção de seleção de aba. Todo o arquivo é carregado em memória; a prévia mostra até 100 linhas. A consulta usa a tabela completa `uploaded_data` e exibe até 1.000 linhas do resultado.
+
+Um arquivo lido sem linhas de dados gera um aviso; um arquivo CSV totalmente vazio, codificação incompatível ou XLSX inválido pode gerar erro de leitura. A interface apresenta mensagens específicas para falhas de leitura, modelo e consulta sem exibir o texto das exceções. Na análise, o modelo tem até três tentativas de consulta, e o DuckDB valida uma única instrução de leitura com acesso externo desabilitado. O limite de exibição não limita o custo da consulta. Não há resposta textual fundamentada no resultado nesta versão.
+
+Para executar os testes automatizados no PowerShell, após instalar as dependências do projeto na `.venv`:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+Os testes usam arquivos sintéticos e o `exemplo.csv`, simulam a interface e o cliente Ollama, verificam os serviços isoladamente e executam consultas no DuckDB real. Não exigem o serviço Ollama. Eles não substituem uma verificação manual no navegador com o modelo local.
