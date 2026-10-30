@@ -1,0 +1,26 @@
+# Ambientes Python e arquivos gerados
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Configuracoes locais e credenciais
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Dados locais: apenas o arquivo de exemplo acompanha o projeto
+*.csv
+*.xlsx
+*.xls
+!exemplo.csv
+
+# Arquivos de editores e do sistema
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
