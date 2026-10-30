@@ -1,8 +1,10 @@
-﻿import streamlit as st
+import pandas as pd
+import streamlit as st
 
 from dataagent.analise import analisar
 from dataagent.leitura import ErroLeitura, ler_arquivo
 from dataagent.modelo import ErroModelo
+from dataagent.perfil import gerar_perfil
 from dataagent.sql import ErroConsulta
 
 st.set_page_config(page_title="Analista de dados", page_icon="📊", layout="wide")
@@ -39,6 +41,20 @@ st.subheader("Prévia dos dados")
 st.dataframe(df.head(100), width="stretch")
 st.caption(f"{len(df):,} linhas e {len(df.columns)} colunas. A prévia mostra até 100 linhas; as consultas usam a tabela completa.")
 st.write("Colunas:", ", ".join(map(str, df.columns)))
+
+perfil = gerar_perfil(df)
+with st.expander("Perfil e qualidade dos dados", expanded=False):
+    st.caption(
+        f"Perfil das primeiras {perfil.linhas_analisadas:,} de {perfil.linhas_totais:,} linhas "
+        f"e {perfil.colunas_analisadas:,} de {perfil.colunas_totais:,} colunas. "
+        "Contagens, resumos e indícios usam somente essa parcela; células vazias em texto não são contadas como ausentes. "
+        "Indícios não confirmam o tipo e não alteram os dados."
+    )
+    st.dataframe(pd.DataFrame(perfil.colunas), width="stretch")
+    st.caption(
+        "Atualmente o Ollama recebe a pergunta e os nomes e tipos das colunas, não este perfil. "
+        "Em uma etapa futura, amostras e estatísticas selecionadas poderão ser enviadas ao Ollama local."
+    )
 
 with st.form("pergunta"):
     question = st.text_area("O que você deseja saber sobre os dados?", placeholder="Ex.: Qual é a média de vendas por produto?")

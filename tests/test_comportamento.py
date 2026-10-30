@@ -1,4 +1,4 @@
-﻿from contextlib import nullcontext
+from contextlib import nullcontext
 from io import BytesIO
 from pathlib import Path
 import runpy
@@ -34,6 +34,7 @@ class FakeStreamlit:
         self.warnings = []
         self.errors = []
         self.captions = []
+        self.expanders = []
 
     def set_page_config(self, **kwargs): pass
     def title(self, *args, **kwargs): pass
@@ -46,7 +47,9 @@ class FakeStreamlit:
     def error(self, value): self.errors.append(value)
     def dataframe(self, value, **kwargs): self.frames.append(value.copy())
     def file_uploader(self, *args, **kwargs): return self.upload
-    def expander(self, *args, **kwargs): return nullcontext()
+    def expander(self, label, **kwargs):
+        self.expanders.append((label, kwargs.get('expanded', False)))
+        return nullcontext()
     def form(self, *args, **kwargs): return nullcontext()
     def spinner(self, *args, **kwargs): return nullcontext()
     def selectbox(self, label, choices): return self.options.get(label, choices[0])
@@ -79,8 +82,11 @@ class LoadingBehaviorTests(unittest.TestCase):
                      options={'Separador': ';', 'Separador decimal': ','}, submitted=True)
         self.assertEqual([], st.errors)
         self.assertEqual(3, len(st.frames[0]))
+        self.assertEqual(['produto', 'vendas', 'quantidade'], list(st.frames[1]['Coluna']))
+        self.assertIn(('Perfil e qualidade dos dados', False), st.expanders)
+        self.assertTrue(any('Ollama recebe' in caption for caption in st.captions))
         self.assertEqual({'Café': 220.50, 'Chá': 80.0},
-                         dict(zip(st.frames[1]['produto'], st.frames[1]['total'])))
+                         dict(zip(st.frames[2]['produto'], st.frames[2]['total'])))
 
     def test_xlsx_loads_first_sheet(self):
         content = BytesIO()

@@ -18,9 +18,9 @@ Este arquivo é o quadro de trabalho do plano aprovado. Um coordenador atualiza 
 
 ### T03 — Perfil e qualidade dos dados
 
-- Estado: Pendente. Dependências: T02.
+- Estado: Concluída. Dependências: T02.
 - Gerar perfil limitado com nomes, tipos, contagens, ausências e resumos apropriados; sinalizar indícios de números ou datas como texto sem converter silenciosamente. Definir limites e evitar expor valores privados desnecessários.
-- Aceite: perfil útil e limitado é mostrado; testes cobrem dados ausentes, tipos e casos ambíguos; texto explica que amostras e estatísticas selecionadas podem ser enviadas ao Ollama local.
+- Aceite: perfil útil e limitado está disponível em seção recolhida por padrão; testes cobrem dados ausentes, tipos e casos ambíguos; texto explica que amostras e estatísticas selecionadas podem ser enviadas ao Ollama local.
 
 ### T04 — Contexto para gerar SQL
 
@@ -61,4 +61,6 @@ Este arquivo é o quadro de trabalho do plano aprovado. Um coordenador atualiza 
 | T01 | Codex | `tests/test_comportamento.py` e README; `.\.venv\Scripts\python.exe -m unittest discover -s tests -v`: 6 testes aprovados, incluindo exemplo CSV e DuckDB real com Ollama simulado. Inicialização headless do Streamlit: health HTTP 200. Não houve teste manual no navegador com Ollama. |
 | T02 | Codex | `app_local.py`, `dataagent/`, `tests/test_servicos.py`, `docs/ARQUITETURA.md` e README; `.\.venv\Scripts\python.exe -m unittest discover -s tests -v`: 15 testes aprovados, inclusive T01. Streamlit headless: health HTTP 200; AppTest iniciou sem upload, mas a limpeza de diretório temporário retornou erro de permissão. Teste manual com Ollama não executado. |
 | T02 — revisão | Codex | Mensagens de correção por categoria fixa, sem repassar a exceção bruta; teste com modelo simulado que usa o motivo e corrige na segunda tentativa. Suíte: 18 testes aprovados. Ollama real não testado. |
-| T03–T09 | A definir | Pendentes. |
+| T03 | Codex | `dataagent/perfil.py`, interface, testes e documentação; `.\.venv\Scripts\python.exe -m unittest discover -s tests -v`: 22 testes aprovados; Streamlit headless: health HTTP 200. Perfil limitado a 1.000 linhas e 50 colunas. Ollama real e teste manual no navegador não executados. |
+| T03 — revisão | Codex | Perfil disponível em seção recolhida a pedido do usuário; verificação independente e limitações registradas em `docs/TESTES.md`. |
+| T04–T09 | A definir | Pendentes. |

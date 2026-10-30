@@ -55,6 +55,8 @@ O resultado esperado é **Café: 220,50** e **Chá: 80,00**.
 
 - O aplicativo lê a primeira aba de arquivos Excel. A prévia mostra até 100 linhas, mas as consultas usam todas as linhas carregadas.
 - Para CSV, é possível ajustar o separador, a codificação e o separador decimal.
+- O perfil examina as primeiras 1.000 linhas e 50 colunas, mostrando tipos, ausências, resumos e possíveis números ou datas em texto. Esses indícios não alteram os dados nem garantem que a conversão seja correta. Nomes no perfil são limitados a 100 caracteres.
+- O perfil fica em uma seção recolhida na interface e ainda não é enviado ao modelo. Em uma etapa futura, amostras e estatísticas selecionadas poderão ser enviadas ao Ollama local, com limites informados.
 - O modelo recebe a pergunta e os nomes e tipos das colunas para gerar uma consulta SQL. Cada pergunta é independente, sem histórico de conversa.
 - As consultas são executadas em um banco DuckDB em memória. O aplicativo limita a exibição a 1.000 linhas de resultado.
 - A IA pode cometer erros; confira a consulta exibida e valide resultados importantes, especialmente números e datas.

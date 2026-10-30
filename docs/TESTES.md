@@ -23,3 +23,16 @@ Tarefa: verificação independente da revisão T02
 Comando: python -m unittest discover -s tests -v (usando a .venv do projeto e PYTHONPATH da raiz)
 Resultado: 18 testes aprovados. Revisadas as categorias fixas de erro e a retentativa com modelo simulado.
 Limitações: Ollama real e interface no navegador não foram executados nesta verificação.
+
+Data: 30/10/2026
+Tarefa: T03 — perfil e qualidade dos dados
+Comando: .\.venv\Scripts\python.exe -m unittest discover -s tests -v
+Resultado: 22 testes aprovados. Verificados ausência, tipos, resumos, indícios ambíguos, limites, preservação da base e exibição do perfil. Os testes da T01 continuam aprovados, incluindo o exemplo de vendas com DuckDB real e Ollama simulado.
+Verificação integrada: inicialização headless do Streamlit com endpoint de saúde HTTP 200; a integração de upload, perfil e consulta foi exercitada com interface e cliente simulados.
+Limitações: não houve teste manual no navegador nem com Ollama real; o perfil usa as primeiras 1.000 linhas e 50 colunas, e indícios de texto são heurísticos.
+
+Data: 30/10/2026
+Tarefa: revisão da T03 — perfil recolhido na interface
+Comando: python -m unittest discover -s tests -v, em cópia de trabalho com a .venv do projeto
+Resultado: 22 testes aprovados, incluindo verificação de que a seção do perfil começa recolhida e o fluxo do exemplo permanece funcional com cliente simulado.
+Limitações: interface após o ajuste não foi testada no navegador; o perfil não é enviado ao modelo até a T04.

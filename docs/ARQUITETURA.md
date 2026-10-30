@@ -58,4 +58,12 @@ O fluxo implementado é `app_local.py → leitura → análise → modelo / SQL 
 - `dataagent/sql.py`: `ExecutorSQL(dados)` abre DuckDB em memória com acesso externo desabilitado e registra `uploaded_data`. `executar(sql)` usa o parser para exigir uma única instrução SELECT e retorna até 1.001 linhas; problemas geram `ErroConsulta`. O gerenciador de contexto fecha a conexão, inclusive nas falhas; falha de registro também fecha a conexão aberta.
 - `dataagent/analise.py`: `analisar(dados, pergunta, cliente=None, executor_factory=ExecutorSQL)` coordena até três tentativas. Retorna `ResultadoAnalise` com DataFrame de até 1.000 linhas, SQL e indicador de truncamento, ou aviso quando o modelo não fornece SQL. `ErroModelo` e `ErroConsulta` são tratados separadamente pela interface. Cliente e fábrica de executor podem ser substituídos em testes.
 
-O código atual ainda não cria perfil nem interpretação textual do resultado: esses contratos permanecem planejados para T03 a T05. O SQL e os dados exibidos permanecem disponíveis para conferência. A limitação de linhas retornadas não impõe limite de tempo ou de recursos à execução.
+A T03 implementa o perfil descrito abaixo; a interpretação textual do resultado permanece planejada para T05. O SQL e os dados exibidos permanecem disponíveis para conferência. A limitação de linhas retornadas não impõe limite de tempo ou de recursos à execução.
+
+## Perfil implementado na T03
+
+`dataagent/perfil.py` expõe `gerar_perfil(DataFrame)`, que retorna um `Perfil` com totais, dimensões analisadas e uma lista de resumos por coluna. O cálculo examina no máximo as primeiras 1.000 linhas e 50 colunas; nomes exibidos são limitados a 100 caracteres mais reticências. As contagens de ausentes e não ausentes e os resumos referem-se apenas às linhas analisadas. Valores nulos do pandas são ausentes; texto vazio não é considerado ausente. Valores numéricos e datas têm mínimo e máximo; booleanos têm contagens de verdadeiro e falso. O perfil não mostra exemplos de texto.
+
+Para texto, expressões simples identificam indícios de números ou datas em valores de até 100 caracteres. São apenas indícios de formato, não validação de data, garantia de conversão ou inferência definitiva; códigos com zeros à esquerda podem parecer números. A base e seus tipos não são modificados. A interface informa os limites, o caráter parcial e que o perfil ainda não é enviado ao modelo. A seleção e o envio de informações do perfil pertencem à T04; amostras e estatísticas selecionadas poderão ser enviadas ao Ollama local em uma etapa futura, com limites e aviso explícitos.
+
+O perfil é exibido em uma seção recolhida por padrão, para não ocupar espaço na tela principal. O cálculo continua disponível independentemente da apresentação.
