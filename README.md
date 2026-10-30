@@ -2,6 +2,16 @@
 
 Aplicativo local para fazer perguntas em português sobre dados de arquivos CSV ou Excel. O aplicativo usa Streamlit para a interface, Ollama com o modelo `llama3.2:latest` para criar consultas SQL e DuckDB para executá-las em memória. Não é necessária uma chave de API.
 
+## Imagens do aplicativo
+
+Prévia dos dados e pergunta sobre o arquivo de exemplo:
+
+![Prévia do arquivo de exemplo e campo para fazer uma pergunta](images/screenshot1.png)
+
+Resultado da análise e consulta SQL utilizada:
+
+![Resultado do total de vendas por produto e consulta SQL](images/screenshot2.png)
+
 ## Requisitos
 
 - Python instalado e disponível no terminal (instalação testada com Python 3.14).
