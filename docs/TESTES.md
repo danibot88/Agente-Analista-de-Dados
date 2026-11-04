@@ -73,3 +73,10 @@ Tarefa: revisão final da T04
 Comandos: python -m unittest discover -s tests -v; DATAAGENT_TESTE_OLLAMA=1 com test_ollama_local.py (na .venv do projeto).
 Resultado: 44 testes padrão aprovados e um opcional ignorado; teste integrado opcional com Ollama real aprovado, com 13.500 linhas e 2.950 registros EUR. Repetidos exemplos sintéticos de soma numérica e contagem de datas tipadas com ausências. O teste integrado verificou o hash da planilha antes e depois da leitura.
 Limitações: não houve teste no navegador; o modelo pode gerar SQL que não corresponde à pergunta. Conversões com filtros seguem não suportadas; comandos de escopo completo exigem sintaxe exata. Ponto flutuante pode ser aproximado.
+
+Data: 04/11/2026
+Tarefa: T05 — resposta fundamentada e atualização do README
+Comando: .\.venv\Scripts\python.exe -m unittest discover -s tests -q
+Resultado: 51 testes aprovados e um teste opcional ignorado. Testados resposta com células executadas, resultado vazio, limites e truncamento, seleção inválida, falha do modelo e preservação da tabela e do SQL; exemplo CSV da T01 aprovado.
+Verificação integrada: script Python executado via .venv com dados sintéticos, DuckDB e Ollama local llama3.2:latest conferiu a consulta de contagem, o resultado e a resposta. A primeira tentativa de interpretação falhou porque o modelo retornou índice inválido; após especificar índices permitidos, a repetição passou.
+Limitações: não houve teste manual no navegador nem com arquivo real nesta tarefa. O modelo pode selecionar linhas pouco relevantes ou gerar SQL que não corresponda à pergunta. Os limites de contexto e exibição não limitam custo de consulta; revisão de recursos permanece na T06.

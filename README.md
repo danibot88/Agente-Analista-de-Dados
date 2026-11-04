@@ -56,8 +56,10 @@ O resultado esperado é **Café: 220,50** e **Chá: 80,00**.
 - O aplicativo lê a primeira aba de arquivos Excel. A prévia mostra até 100 linhas, mas as consultas usam todas as linhas carregadas.
 - Para CSV, é possível ajustar o separador, a codificação e o separador decimal.
 - O perfil examina as primeiras 1.000 linhas e 50 colunas, mostrando tipos, ausências, resumos e possíveis números ou datas em texto. Esses indícios não alteram os dados nem garantem que a conversão seja correta. Nomes no perfil são limitados a 100 caracteres.
-- O perfil fica em uma seção recolhida na interface e ainda não é enviado ao modelo. Em uma etapa futura, amostras e estatísticas selecionadas poderão ser enviadas ao Ollama local, com limites informados.
+- O perfil fica em uma seção recolhida. Quando o Ollama gera SQL, ele recebe a pergunta e o perfil limitado, incluindo nomes, tipos, contagens e resumos numéricos ou de datas, mas não exemplos de texto. Esses dados podem ser sensíveis.
 - Cada pergunta é independente. A consulta gerada é limitada a projeções, contagens e agregações simples, com filtros textuais diretos e sem conversões arbitrárias; solicitações incompatíveis podem ser recusadas.
+- Após executar a consulta, o aplicativo pede ao Ollama que selecione até três linhas e monta a resposta com os valores efetivamente retornados. A seleção pode não responder completamente à pergunta; confira a tabela e o SQL.
+- Para essa seleção, são enviados ao Ollama local a pergunta (até 2.000 caracteres), o SQL (até 4.000), os nomes e valores de até 10 linhas e 8 colunas do resultado (até 120 caracteres por campo). O aplicativo avisa quando o contexto ou resultado é parcial. Esses dados podem ser sensíveis.
 - As consultas são executadas em um banco DuckDB em memória. O aplicativo limita a exibição a 1.000 linhas de resultado.
 - A IA pode cometer erros; confira a consulta exibida e valide resultados importantes, especialmente números e datas.
 - O `.gitignore` exclui planilhas e CSVs locais por padrão, com exceção de `exemplo.csv`, para ajudar a evitar a inclusão acidental de dados privados no Git.
@@ -71,7 +73,7 @@ somar "valor" por "moeda" decimal "." em todas as linhas
 contar por data "data" em todas as linhas
 ```
 
-Esses comandos são interpretados pelo aplicativo, sem depender do modelo. Perguntas livres ou filtradas que gerem esses planos são recusadas. Consultas SQL simples continuam usando o modelo: a validação de segurança não garante que o SQL expresse corretamente todos os filtros pedidos em linguagem natural; confira a consulta exibida.
+Esses comandos geram e executam o SQL sem depender do modelo; a seleção de linhas para a resposta textual usa o Ollama. Perguntas livres ou filtradas que gerem esses planos são recusadas. Consultas SQL simples continuam usando o modelo: a validação de segurança não garante que o SQL expresse corretamente todos os filtros pedidos em linguagem natural; confira a consulta exibida.
 
 Para somar uma coluna monetária em texto, o plano controlado exige uma única coluna de moeda reconhecida (`currency`, `moeda`, `currency_code` ou `codigo_moeda`) e um separador decimal explícito. A operação usa todas as linhas, sem filtros, agrupa as moedas como aparecem e não converte câmbio. Valores com moeda ausente não são somados; identificadores repetidos não são removidos. A tabela e o aviso informam contagens de valores inválidos, ausentes e válidos sem moeda. Para valores em texto, aceitam-se até seis casas decimais e não se aceita separador de milhares; formatos diferentes são contados como inválidos. Colunas já numéricas são somadas no tipo disponível, sem aplicar o separador informado; ponto flutuante pode produzir valores aproximados e infinitos são contados como inválidos. Não há normalização de códigos de moeda.
 
@@ -83,7 +85,7 @@ Na leitura de CSV, pandas infere tipos e reconhece marcadores padrão como ausen
 
 O CSV é lido com pandas: o separador pode ser automático, `;`, `,` ou tabulação; a codificação pode ser `utf-8-sig`, `cp1252` ou `latin-1`; o separador decimal pode ser `.` ou `,`. As opções padrão são automático, `utf-8-sig` e `.`. O XLSX é lido pela primeira aba, com `openpyxl`, sem opção de seleção de aba. Todo o arquivo é carregado em memória; a prévia mostra até 100 linhas. A consulta usa a tabela completa `uploaded_data` e exibe até 1.000 linhas do resultado.
 
-Um arquivo lido sem linhas de dados gera um aviso; um arquivo CSV totalmente vazio, codificação incompatível ou XLSX inválido pode gerar erro de leitura. A interface apresenta mensagens específicas para falhas de leitura, modelo e consulta sem exibir o texto das exceções. Na análise, o modelo tem até três tentativas de consulta, e o DuckDB valida uma única instrução de leitura com acesso externo desabilitado. O limite de exibição não limita o custo da consulta. Não há resposta textual fundamentada no resultado nesta versão.
+Um arquivo lido sem linhas de dados gera um aviso; um arquivo CSV totalmente vazio, codificação incompatível ou XLSX inválido pode gerar erro de leitura. A interface apresenta mensagens específicas para falhas de leitura, modelo e consulta sem exibir o texto das exceções. Se a interpretação falhar, o resultado e o SQL permanecem disponíveis. Na análise, o modelo tem até três tentativas de consulta, e o DuckDB valida uma única instrução de leitura com acesso externo desabilitado. O limite de exibição não limita o custo da consulta.
 
 Para executar os testes automatizados no PowerShell, após instalar as dependências do projeto na `.venv`:
 

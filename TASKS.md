@@ -30,7 +30,7 @@ Este arquivo é o quadro de trabalho do plano aprovado. Um coordenador atualiza 
 
 ### T05 — Resposta fundamentada
 
-- Estado: Pendente. Dependências: T04.
+- Estado: Concluída. Dependências: T04.
 - Elaborar resposta em português usando apenas a pergunta, SQL e resultado executado, com limites explícitos para o conteúdo enviado ao modelo. Mostrar tabela e SQL; distinguir resultado vazio e resultado truncado.
 - Aceite: testes simulam resposta baseada em resultado, vazio, truncamento e falha do modelo. A interface informa quando apenas uma parcela dos dados ou do resultado foi utilizada para interpretação; nenhuma análise completa é afirmada para uma amostra parcial.
 
@@ -67,4 +67,5 @@ Este arquivo é o quadro de trabalho do plano aprovado. Um coordenador atualiza 
 | T04 — revisão em andamento | Codex | Filtros textuais e testes com Ollama real; planos de conversão sem filtro exigem comando estruturado de escopo completo e perguntas filtradas são recusadas. Restrições e verificações em `docs/TESTES.md`. |
 | T04 — tipos nativos | Codex | Planos de soma e data aceitam tipos nativos, preservam ausências e escopo sem filtro; verificações e limitações em `docs/TESTES.md`. |
 | T04 — revisão final | Codex | 44 testes automatizados aprovados; teste integrado com Ollama real aprovado para total de linhas e filtro de moeda. Conversões filtradas seguem não suportadas; testes e limitações em `docs/TESTES.md`. |
-| T05–T09 | A definir | Pendentes. |
+| T05 | Codex | Resposta com células do resultado e índices validados, avisos de limites e falhas; 51 testes aprovados e um opcional ignorado; integração com Ollama e dados sintéticos aprovada. Limitações em `docs/TESTES.md`. |
+| T06–T09 | A definir | Pendentes. |

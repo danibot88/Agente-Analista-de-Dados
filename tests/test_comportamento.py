@@ -8,6 +8,8 @@ from unittest.mock import patch
 
 import duckdb  # Mantém o módulo nativo carregado entre execuções simuladas.
 import pandas as pd
+from dataagent.modelo import ErroModelo
+from dataagent.resposta import Resposta
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -35,13 +37,16 @@ class FakeStreamlit:
         self.errors = []
         self.captions = []
         self.expanders = []
+        self.textos = []
+        self.consultas = []
 
     def set_page_config(self, **kwargs): pass
     def title(self, *args, **kwargs): pass
     def write(self, *args, **kwargs): pass
     def info(self, *args, **kwargs): pass
     def subheader(self, *args, **kwargs): pass
-    def code(self, *args, **kwargs): pass
+    def code(self, valor, **kwargs): self.consultas.append(valor)
+    def text(self, valor, **kwargs): self.textos.append(valor)
     def caption(self, value): self.captions.append(value)
     def warning(self, value): self.warnings.append(value)
     def error(self, value): self.errors.append(value)
@@ -62,6 +67,8 @@ class FakeClient:
     def __init__(self, **kwargs): pass
 
     def chat(self, **kwargs):
+        if 'linhas' in kwargs['format']['properties']:
+            return types.SimpleNamespace(message=types.SimpleNamespace(content='{"linhas": [0]}'))
         content = '{"sql": "SELECT produto, SUM(vendas) AS total FROM uploaded_data GROUP BY produto ORDER BY produto", "explicacao": "Total por produto"}'
         return types.SimpleNamespace(message=types.SimpleNamespace(content=content))
 
@@ -87,6 +94,7 @@ class LoadingBehaviorTests(unittest.TestCase):
         self.assertTrue(any('Ollama local recebe' in caption for caption in st.captions))
         self.assertEqual({'Café': 220.50, 'Chá': 80.0},
                          dict(zip(st.frames[2]['produto'], st.frames[2]['total'])))
+        self.assertTrue(any('Café' in texto and '220.5' in texto for texto in st.textos))
 
     def test_xlsx_loads_first_sheet(self):
         content = BytesIO()
@@ -97,6 +105,21 @@ class LoadingBehaviorTests(unittest.TestCase):
         self.assertEqual([], st.errors)
         self.assertEqual(['produto', 'vendas'], list(st.frames[0].columns))
         self.assertEqual('Café', st.frames[0].iloc[0]['produto'])
+
+    def test_falha_de_interpretacao_preserva_tabela_e_sql(self):
+        with patch('dataagent.resposta.ClienteOllama', side_effect=ErroModelo('falha')):
+            st = run_app(Upload('exemplo.csv', (ROOT / 'exemplo.csv').read_bytes()),
+                         options={'Separador': ';', 'Separador decimal': ','}, submitted=True)
+        self.assertEqual(2, len(st.frames[2]))
+        self.assertIn('SELECT produto', st.consultas[0])
+        self.assertTrue(any('Não foi possível interpretar' in aviso for aviso in st.warnings))
+
+    def test_interface_informa_interpretacao_parcial(self):
+        with patch('dataagent.resposta.responder', return_value=Resposta(texto='Linhas selecionadas', parcial=True)):
+            st = run_app(Upload('exemplo.csv', (ROOT / 'exemplo.csv').read_bytes()),
+                         options={'Separador': ';', 'Separador decimal': ','}, submitted=True)
+        self.assertTrue(any('apenas parte do resultado' in texto for texto in st.captions))
+        self.assertIn('Linhas selecionadas', st.textos)
 
     def test_header_only_csv_warns(self):
         st = run_app(Upload('vazio.csv', b'produto;vendas\n'), options={'Separador': ';'})

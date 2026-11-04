@@ -5,6 +5,8 @@ from dataagent.analise import analisar
 from dataagent.leitura import ErroLeitura, ler_arquivo
 from dataagent.modelo import ErroModelo
 from dataagent.perfil import gerar_perfil
+from dataagent.politica import interpretar_comando_sem_filtro
+from dataagent.resposta import responder
 from dataagent.sql import ErroConsulta
 
 st.set_page_config(page_title="Analista de dados", page_icon="📊", layout="wide")
@@ -74,11 +76,22 @@ if submitted:
             else:
                 st.subheader("Resultado")
                 st.caption(resultado.limitacoes)
+                if (interpretar_comando_sem_filtro(question) is None and
+                        (perfil.linhas_analisadas < perfil.linhas_totais or perfil.colunas_analisadas < perfil.colunas_totais)):
+                    st.caption("O modelo gerou o SQL usando um perfil parcial da base; a consulta usa os dados carregados.")
                 st.dataframe(resultado.dados, width="stretch")
                 if resultado.truncado:
                     st.caption("Exibindo as primeiras 1.000 linhas do resultado.")
                 with st.expander("Ver consulta usada"):
                     st.code(resultado.sql, language="sql")
+                resposta = responder(question, resultado.sql, resultado.dados, resultado.truncado)
+                st.subheader("Resposta")
+                if resposta.parcial:
+                    st.caption("A interpretação usou apenas parte do resultado ou do contexto; confira a tabela e o SQL.")
+                if resposta.aviso:
+                    st.warning(resposta.aviso)
+                else:
+                    st.text(resposta.texto)
         except ErroModelo:
             st.error("Não foi possível obter uma resposta válida do modelo.")
             st.info("Verifique se o Ollama está aberto e se o modelo llama3.2 está instalado.")

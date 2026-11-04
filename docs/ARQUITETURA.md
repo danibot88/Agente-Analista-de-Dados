@@ -58,7 +58,7 @@ O fluxo implementado é `app_local.py → leitura → análise → modelo / SQL 
 - `dataagent/sql.py`: `ExecutorSQL(dados)` abre DuckDB em memória com acesso externo desabilitado e registra `uploaded_data`. `executar(sql)` usa o parser para exigir uma única instrução SELECT e retorna até 1.001 linhas; problemas geram `ErroConsulta`. O gerenciador de contexto fecha a conexão, inclusive nas falhas; falha de registro também fecha a conexão aberta.
 - `dataagent/analise.py`: `analisar(dados, pergunta, cliente=None, executor_factory=ExecutorSQL)` coordena até três tentativas. Retorna `ResultadoAnalise` com DataFrame de até 1.000 linhas, SQL e indicador de truncamento, ou aviso quando o modelo não fornece SQL. `ErroModelo` e `ErroConsulta` são tratados separadamente pela interface. Cliente e fábrica de executor podem ser substituídos em testes.
 
-A T03 implementa o perfil descrito abaixo; a interpretação textual do resultado permanece planejada para T05. O SQL e os dados exibidos permanecem disponíveis para conferência. A limitação de linhas retornadas não impõe limite de tempo ou de recursos à execução.
+A T03 implementa o perfil descrito abaixo; a interpretação textual da T05 é descrita ao final. O SQL e os dados exibidos permanecem disponíveis para conferência. A limitação de linhas retornadas não impõe limite de tempo ou de recursos à execução.
 
 ## Perfil implementado na T03
 
@@ -79,3 +79,9 @@ Operações controladas usam todas as linhas sem filtros; o modelo deve recusar 
 ### Garantia de escopo dos planos de conversão
 
 Os planos `somar_por_moeda` e `contar_por_data` ainda não suportam filtros. `interpretar_comando_sem_filtro` interpreta apenas os comandos exatos documentados no README, cujos parâmetros são nomes e separador explícitos e cujo escopo é todas as linhas. Esses comandos são executados sem consultar o modelo. Para qualquer resposta do modelo com esses planos, `confirma_operacao_sem_filtro` verifica independentemente a correspondência exata com o comando e rejeita parâmetros adicionais, SQL contraditório ou qualquer texto extra; caso contrário, a operação é recusada antes da execução. A interface exibe o aviso. Essa proteção não comprova a correspondência semântica entre perguntas livres e SQL de leitura gerado pelo modelo em outros caminhos; o usuário deve conferir o SQL.
+
+## Resposta fundamentada na T05
+
+`dataagent/resposta.py` recebe pergunta, SQL e DataFrame resultante da execução, mais o indicador de truncamento. Resultado vazio gera mensagem local sem consultar o modelo. Para resultados não vazios, envia ao Ollama no máximo 10 linhas e 8 colunas, com até 120 caracteres por nome ou valor, 2.000 caracteres de pergunta e 4.000 de SQL. O cliente retorna somente índices de até três linhas; o serviço valida os índices e constrói o texto com as células disponíveis, sem reproduzir explicações livres do modelo. A seleção pode ser incompleta ou inadequada para a pergunta e não garante que o SQL corresponda à intenção do usuário.
+
+A interface informa quando o resultado, o contexto ou o perfil usado para gerar SQL é parcial. Falha ou resposta inválida do modelo gera aviso, preservando tabela e SQL. Os valores de resultado selecionados são enviados ao processo Ollama local e podem ser sensíveis. O limite de exibição e do contexto não limita o custo da consulta.
