@@ -120,9 +120,34 @@ class ServicosTests(unittest.TestCase):
     def test_parser_e_acesso_externo(self):
         with ExecutorSQL(self.dados) as executor:
             self.assertFalse(executor.conn.execute("SELECT current_setting('enable_external_access')").fetchone()[0])
+            self.assertEqual(2, executor.conn.execute("SELECT current_setting('threads')").fetchone()[0])
+            self.assertEqual('0 bytes', executor.conn.execute("SELECT current_setting('max_temp_directory_size')").fetchone()[0])
+            memoria = executor.conn.execute("SELECT current_setting('memory_limit')").fetchone()[0]
+            self.assertEqual('244.1 MiB', memoria)
             for sql in ['SELECT 1; SELECT 2', 'DELETE FROM uploaded_data', "SELECT * FROM read_csv('arquivo.csv')"]:
                 with self.subTest(sql=sql), self.assertRaises(ErroConsulta):
                     executor.executar(sql)
+
+    def test_limite_de_memoria_interrompe_consulta_real(self):
+        with patch('dataagent.sql.LIMITE_MEMORIA_DUCKDB', '16MB'):
+            with ExecutorSQL(self.dados) as executor:
+                sql = "SELECT COUNT(*) FROM (SELECT DISTINCT md5(i::VARCHAR) FROM range(1000000) t(i))"
+                with self.assertRaises(ErroConsulta) as erro:
+                    executor.executar(sql)
+        self.assertEqual('recursos', erro.exception.categoria)
+
+    def test_memoria_esgotada_nao_dispara_novas_tentativas(self):
+        executor = MagicMock()
+        executor.__enter__.return_value = executor
+        executor.executar.side_effect = ErroConsulta('memória', 'recursos')
+        modelo = ModeloFalso(['SELECT * FROM uploaded_data'] * 3)
+        with patch('dataagent.analise.validar_sql_simples'):
+            with self.assertRaises(ErroConsulta) as erro:
+                analisar(self.dados, 'Pergunta', modelo, executor_factory=lambda dados: executor)
+        self.assertEqual('recursos', erro.exception.categoria)
+        self.assertEqual(1, executor.executar.call_count)
+        self.assertEqual(1, len(modelo.mensagens))
+        executor.__exit__.assert_called_once()
 
     def test_conexao_fecha_em_sucesso_falha_modelo_e_falha_sql(self):
         for resposta in ['SELECT * FROM uploaded_data', ErroModelo('falha'), 'DELETE FROM uploaded_data']:

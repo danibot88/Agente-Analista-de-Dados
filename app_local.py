@@ -95,6 +95,10 @@ if submitted:
         except ErroModelo:
             st.error("Não foi possível obter uma resposta válida do modelo.")
             st.info("Verifique se o Ollama está aberto e se o modelo llama3.2 está instalado.")
-        except ErroConsulta:
-            st.error("Não foi possível preparar ou executar a consulta gerada.")
-            st.info("Confira a pergunta e os formatos dos dados e tente novamente.")
+        except ErroConsulta as erro:
+            if erro.categoria == 'recursos':
+                st.error("A consulta excedeu o limite de memória do DuckDB.")
+                st.info("Tente uma pergunta que exija menos processamento.")
+            else:
+                st.error("Não foi possível preparar ou executar a consulta gerada.")
+                st.info("Confira a pergunta e os formatos dos dados e tente novamente.")

@@ -36,7 +36,7 @@ Este arquivo é o quadro de trabalho do plano aprovado. Um coordenador atualiza 
 
 ### T06 — Integração, limites e documentação
 
-- Estado: Pendente. Dependências: T01–T05.
+- Estado: Concluída. Dependências: T01–T05.
 - Revisar riscos de consultas caras e implementar limites de tempo ou recursos viáveis no ambiente, verificando seu efeito; se não forem viáveis, documentar limitações sem alegar proteção inexistente. Testar o fluxo completo e atualizar README.
 - Aceite: suíte automatizada aprovada; execução manual com Ollama registrada quando disponível, ou impedimento explicitado; instruções de instalação, arquitetura, privacidade, limitações e verificações atualizadas.
 
@@ -68,4 +68,5 @@ Este arquivo é o quadro de trabalho do plano aprovado. Um coordenador atualiza 
 | T04 — tipos nativos | Codex | Planos de soma e data aceitam tipos nativos, preservam ausências e escopo sem filtro; verificações e limitações em `docs/TESTES.md`. |
 | T04 — revisão final | Codex | 44 testes automatizados aprovados; teste integrado com Ollama real aprovado para total de linhas e filtro de moeda. Conversões filtradas seguem não suportadas; testes e limitações em `docs/TESTES.md`. |
 | T05 | Codex | Resposta com células do resultado e índices validados, avisos de limites e falhas; 51 testes aprovados e um opcional ignorado; integração com Ollama e dados sintéticos aprovada. Limitações em `docs/TESTES.md`. |
-| T06–T09 | A definir | Pendentes. |
+| T06 | Codex | Limite de memória do DuckDB, threads e armazenamento temporário configurados; 54 testes aprovados e um opcional ignorado; integração com Ollama e CSV de exemplo aprovada. Sem limite de tempo e sem teto para memória total do processo; ver `docs/TESTES.md`. |
+| T07–T09 | A definir | Pendentes. |

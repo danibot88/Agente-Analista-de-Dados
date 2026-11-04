@@ -61,6 +61,8 @@ O resultado esperado é **Café: 220,50** e **Chá: 80,00**.
 - Após executar a consulta, o aplicativo pede ao Ollama que selecione até três linhas e monta a resposta com os valores efetivamente retornados. A seleção pode não responder completamente à pergunta; confira a tabela e o SQL.
 - Para essa seleção, são enviados ao Ollama local a pergunta (até 2.000 caracteres), o SQL (até 4.000), os nomes e valores de até 10 linhas e 8 colunas do resultado (até 120 caracteres por campo). O aplicativo avisa quando o contexto ou resultado é parcial. Esses dados podem ser sensíveis.
 - As consultas são executadas em um banco DuckDB em memória. O aplicativo limita a exibição a 1.000 linhas de resultado.
+- Cada conexão DuckDB é configurada com `memory_limit` de 256 MB, até duas threads e tamanho máximo de arquivos temporários de 0 bytes. Se o DuckDB informar falta de memória, a análise é interrompida e a interface mostra um erro específico.
+- Esse limite cobre a memória gerenciada pelo DuckDB, não o consumo total do processo, os arquivos carregados pelo pandas ou o Ollama. Não há limite de tempo de execução das consultas; consultas caras ainda podem demorar ou consumir outros recursos.
 - A IA pode cometer erros; confira a consulta exibida e valide resultados importantes, especialmente números e datas.
 - O `.gitignore` exclui planilhas e CSVs locais por padrão, com exceção de `exemplo.csv`, para ajudar a evitar a inclusão acidental de dados privados no Git.
 

@@ -10,6 +10,7 @@ import duckdb  # Mantém o módulo nativo carregado entre execuções simuladas.
 import pandas as pd
 from dataagent.modelo import ErroModelo
 from dataagent.resposta import Resposta
+from dataagent.sql import ErroConsulta
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -113,6 +114,12 @@ class LoadingBehaviorTests(unittest.TestCase):
         self.assertEqual(2, len(st.frames[2]))
         self.assertIn('SELECT produto', st.consultas[0])
         self.assertTrue(any('Não foi possível interpretar' in aviso for aviso in st.warnings))
+
+    def test_exibe_erro_especifico_para_limite_de_memoria(self):
+        with patch('dataagent.analise.analisar', side_effect=ErroConsulta('detalhes', 'recursos')):
+            st = run_app(Upload('exemplo.csv', (ROOT / 'exemplo.csv').read_bytes()),
+                         options={'Separador': ';', 'Separador decimal': ','}, submitted=True)
+        self.assertEqual(['A consulta excedeu o limite de memória do DuckDB.'], st.errors)
 
     def test_interface_informa_interpretacao_parcial(self):
         with patch('dataagent.resposta.responder', return_value=Resposta(texto='Linhas selecionadas', parcial=True)):

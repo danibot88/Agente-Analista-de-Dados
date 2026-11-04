@@ -121,7 +121,7 @@ def analisar(dados, pergunta, cliente=None, executor_factory=ExecutorSQL):
                     limitacoes += ' Operação sobre todas as linhas, sem filtros. ' + formato + totais
                 return ResultadoAnalise(dados=resultado.head(1000), sql=query, truncado=len(resultado) > 1000, limitacoes=limitacoes)
             except ErroConsulta as erro:
-                if comando is not None:
+                if comando is not None or erro.categoria == 'recursos':
                     raise
                 messages.extend([
                     {'role': 'assistant', 'content': raw},

@@ -2,6 +2,9 @@
 import duckdb
 import pandas as pd
 
+LIMITE_MEMORIA_DUCKDB = '256MB'
+LIMITE_THREADS_DUCKDB = '2'
+
 
 MOTIVOS_CORRECAO = {
     'sintaxe': 'Há um erro de sintaxe SQL. Revise a estrutura da consulta para DuckDB.',
@@ -11,6 +14,7 @@ MOTIVOS_CORRECAO = {
     'restricao': 'A consulta deve conter uma única instrução SELECT de leitura.',
     'politica': 'A operação solicitada não pode ser verificada com segurança. Use um plano de conversão suportado ou explique a impossibilidade.',
     'execucao': 'A consulta não pôde ser executada. Revise os tipos e as operações utilizadas.',
+    'recursos': 'A consulta excedeu o limite de memória do DuckDB.',
 }
 
 
@@ -30,7 +34,12 @@ class ExecutorSQL:
     def __init__(self, dados):
         self.conn = None
         try:
-            self.conn = duckdb.connect(database=':memory:', config={'enable_external_access': 'false'})
+            self.conn = duckdb.connect(database=':memory:', config={
+                'enable_external_access': 'false',
+                'memory_limit': LIMITE_MEMORIA_DUCKDB,
+                'threads': LIMITE_THREADS_DUCKDB,
+                'max_temp_directory_size': '0B',
+            })
             self.conn.register('uploaded_data', dados)
         except Exception as exc:
             if self.conn is not None:
@@ -60,5 +69,7 @@ class ExecutorSQL:
             raise ErroConsulta('A consulta é inválida ou não pôde ser executada.', 'referencia') from exc
         except duckdb.ConversionException as exc:
             raise ErroConsulta('A consulta é inválida ou não pôde ser executada.', 'conversao') from exc
+        except duckdb.OutOfMemoryException as exc:
+            raise ErroConsulta('A consulta excedeu o limite de memória do DuckDB.', 'recursos') from exc
         except Exception as exc:
             raise ErroConsulta('A consulta é inválida ou não pôde ser executada.') from exc

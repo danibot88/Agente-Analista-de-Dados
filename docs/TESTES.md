@@ -80,3 +80,11 @@ Comando: .\.venv\Scripts\python.exe -m unittest discover -s tests -q
 Resultado: 51 testes aprovados e um teste opcional ignorado. Testados resposta com células executadas, resultado vazio, limites e truncamento, seleção inválida, falha do modelo e preservação da tabela e do SQL; exemplo CSV da T01 aprovado.
 Verificação integrada: script Python executado via .venv com dados sintéticos, DuckDB e Ollama local llama3.2:latest conferiu a consulta de contagem, o resultado e a resposta. A primeira tentativa de interpretação falhou porque o modelo retornou índice inválido; após especificar índices permitidos, a repetição passou.
 Limitações: não houve teste manual no navegador nem com arquivo real nesta tarefa. O modelo pode selecionar linhas pouco relevantes ou gerar SQL que não corresponda à pergunta. Os limites de contexto e exibição não limitam custo de consulta; revisão de recursos permanece na T06.
+
+Data: 04/11/2026
+Tarefa: T06 — integração, limites e documentação
+Comando: .\.venv\Scripts\python.exe -m unittest discover -s tests -v
+Resultado: 54 testes aprovados e um teste opcional ignorado. Verificados configuração do DuckDB, acesso externo desabilitado, erro de memória, ausência de novas tentativas e apresentação na interface simulada. A suíte manteve o exemplo CSV aprovado.
+Verificação de recursos: consulta sintética com limite de DuckDB reduzido a 16 MB provocou erro real de memória e foi tratada como `recursos`. Com o padrão de 256 MB, consultas sintéticas distintas de maior volume terminaram sem atingir o limite; isso não estabelece limite de tempo nem de memória total.
+Verificação integrada manual: script Python executado na .venv com o CSV de exemplo, DuckDB e Ollama local confirmou SQL, totais esperados e resposta. A primeira tentativa excedeu o prazo de 30 segundos do cliente de teste; a segunda, com prazo de 60 segundos, passou.
+Limitações: não foi feito teste manual no navegador. Não há limite de tempo de consulta, nem teto para o consumo total do processo, pandas, Streamlit ou Ollama; a memória gerenciada pelo DuckDB tem limite de 256 MB e os arquivos temporários do DuckDB estão limitados a 0 bytes. A seleção de linhas e o SQL gerados pelo modelo podem não corresponder à intenção do usuário.
