@@ -1,15 +1,17 @@
-from io import BytesIO
-import json
-
-import duckdb
 import pandas as pd
 import streamlit as st
-from ollama import Client
+
+from dataagent.analise import analisar
+from dataagent.leitura import ErroLeitura, ler_arquivo
+from dataagent.modelo import ErroModelo
+from dataagent.perfil import gerar_perfil
+from dataagent.politica import interpretar_comando_sem_filtro
+from dataagent.resposta import responder
+from dataagent.sql import ErroConsulta
 
 st.set_page_config(page_title="Analista de dados", page_icon="📊", layout="wide")
 st.title("📊 Analista de dados")
 st.write("Envie um arquivo CSV ou Excel e faça perguntas sobre seus dados.")
-
 st.caption("A análise usa o modelo llama3.2 no Ollama do seu computador. Não é necessária chave de API.")
 
 uploaded = st.file_uploader("Arquivo de dados", type=["csv", "xlsx"])
@@ -27,23 +29,36 @@ if uploaded.name.lower().endswith(".csv"):
                    "encoding": encoding, "decimal": decimal}
 
 try:
-    data = BytesIO(uploaded.getvalue())
-    if uploaded.name.lower().endswith(".csv"):
-        df = pd.read_csv(data, engine="python", **csv_options)
-    else:
-        df = pd.read_excel(data, engine="openpyxl")
-    if df.empty or len(df.columns) == 0:
-        st.warning("O arquivo não contém linhas de dados para analisar.")
-        st.stop()
-except Exception as exc:
-    st.error(f"Não foi possível ler o arquivo: {exc}")
+    df = ler_arquivo(uploaded.getvalue(), uploaded.name, csv_options)
+except ErroLeitura:
+    st.error("Não foi possível ler o arquivo: formato ou conteúdo inválido.")
     st.info("Se for CSV, confira o separador, a codificação e o separador decimal nas configurações acima.")
+    st.stop()
+
+if df.empty or len(df.columns) == 0:
+    st.warning("O arquivo não contém linhas de dados para analisar.")
     st.stop()
 
 st.subheader("Prévia dos dados")
 st.dataframe(df.head(100), width="stretch")
 st.caption(f"{len(df):,} linhas e {len(df.columns)} colunas. A prévia mostra até 100 linhas; as consultas usam a tabela completa.")
+if uploaded.name.lower().endswith('.csv'):
+    st.caption('Na leitura CSV, o pandas infere tipos e reconhece células vazias e marcadores padrão como ausentes; esses marcadores não podem ser diferenciados depois da leitura.')
 st.write("Colunas:", ", ".join(map(str, df.columns)))
+
+perfil = gerar_perfil(df)
+with st.expander("Perfil e qualidade dos dados", expanded=False):
+    st.caption(
+        f"Perfil das primeiras {perfil.linhas_analisadas:,} de {perfil.linhas_totais:,} linhas "
+        f"e {perfil.colunas_analisadas:,} de {perfil.colunas_totais:,} colunas. "
+        "Contagens, resumos e indícios usam somente essa parcela; células vazias em texto não são contadas como ausentes. "
+        "Indícios não confirmam o tipo e não alteram os dados."
+    )
+    st.dataframe(pd.DataFrame(perfil.colunas), width="stretch")
+    st.caption(
+        "Quando usado, o Ollama local recebe a pergunta e o perfil limitado, incluindo nomes, tipos, contagens e resumos numéricos ou de datas. "
+        "O perfil não contém exemplos de texto; dados enviados ainda podem ser sensíveis."
+    )
 
 with st.form("pergunta"):
     question = st.text_area("O que você deseja saber sobre os dados?", placeholder="Ex.: Qual é a média de vendas por produto?")
@@ -53,61 +68,37 @@ if submitted:
     if not question.strip():
         st.warning("Digite uma pergunta antes de analisar.")
     else:
-        conn = None
         try:
             with st.spinner("Analisando os dados..."):
-                conn = duckdb.connect(database=":memory:", config={"enable_external_access": "false"})
-                conn.register("uploaded_data", df)
-                client = Client(host="http://localhost:11434", trust_env=False, timeout=180)
-                columns = [{"nome": str(name), "tipo": str(dtype)} for name, dtype in df.dtypes.items()]
-                schema = {
-                    "type": "object",
-                    "properties": {"sql": {"type": "string"}, "explicacao": {"type": "string"}},
-                    "required": ["sql", "explicacao"],
-                }
-                messages = [
-                    {"role": "system", "content": (
-                        "Você converte perguntas em uma única consulta SQL de leitura para DuckDB. "
-                        "A única tabela disponível chama-se uploaded_data. Use os nomes de coluna exatos, "
-                        "entre aspas duplas. Não invente colunas ou valores. Não use arquivos externos. "
-                        "Retorne JSON com sql e uma explicação curta em português. "
-                        "Se a pergunta não puder ser respondida com as colunas, deixe sql vazio e explique."
-                    )},
-                    {"role": "user", "content": "Colunas e tipos: " + json.dumps(columns, ensure_ascii=False) + "\nPergunta: " + question.strip()},
-                ]
-                last_error = None
-                for _ in range(3):
-                    response = client.chat(model="llama3.2:latest", messages=messages, format=schema, options={"temperature": 0})
-                    raw = response.message.content or "{}"
-                    result = json.loads(raw)
-                    query = str(result.get("sql", "")).strip().rstrip(";").strip()
-                    explanation = str(result.get("explicacao", ""))
-                    if not query:
-                        st.warning(explanation or "Não consegui montar uma consulta para essa pergunta.")
-                        break
-                    try:
-                        statements = conn.extract_statements(query)
-                        if len(statements) != 1 or statements[0].type != duckdb.StatementType.SELECT:
-                            raise ValueError("A consulta precisa ser um único SELECT.")
-                        result_df = conn.execute("SELECT * FROM (" + query + ") AS resultado LIMIT 1001").df()
-                        st.subheader("Resultado")
-                        st.dataframe(result_df.head(1000), width="stretch")
-                        if len(result_df) > 1000:
-                            st.caption("Exibindo as primeiras 1.000 linhas do resultado.")
-                        with st.expander("Ver consulta usada"):
-                            st.code(query, language="sql")
-                        break
-                    except Exception as query_error:
-                        last_error = str(query_error)
-                        messages.extend([
-                            {"role": "assistant", "content": raw},
-                            {"role": "user", "content": "A consulta falhou: " + last_error + ". Corrija o SQL usando os nomes exatos das colunas."},
-                        ])
+                resultado = analisar(df, question)
+            if resultado.aviso:
+                st.warning(resultado.aviso)
+            else:
+                st.subheader("Resultado")
+                st.caption(resultado.limitacoes)
+                if (interpretar_comando_sem_filtro(question) is None and
+                        (perfil.linhas_analisadas < perfil.linhas_totais or perfil.colunas_analisadas < perfil.colunas_totais)):
+                    st.caption("O modelo gerou o SQL usando um perfil parcial da base; a consulta usa os dados carregados.")
+                st.dataframe(resultado.dados, width="stretch")
+                if resultado.truncado:
+                    st.caption("Exibindo as primeiras 1.000 linhas do resultado.")
+                with st.expander("Ver consulta usada"):
+                    st.code(resultado.sql, language="sql")
+                resposta = responder(question, resultado.sql, resultado.dados, resultado.truncado)
+                st.subheader("Resposta")
+                if resposta.parcial:
+                    st.caption("A interpretação usou apenas parte do resultado ou do contexto; confira a tabela e o SQL.")
+                if resposta.aviso:
+                    st.warning(resposta.aviso)
                 else:
-                    st.error("Não consegui executar a consulta gerada: " + (last_error or "erro desconhecido"))
-        except Exception as exc:
-            st.error(f"Não foi possível concluir a análise: {exc}")
-            st.info("Verifique se o Ollama está aberto e se o modelo llama3.2 está instalado. Confira também os formatos dos dados.")
-        finally:
-            if conn is not None:
-                conn.close()
+                    st.text(resposta.texto)
+        except ErroModelo:
+            st.error("Não foi possível obter uma resposta válida do modelo.")
+            st.info("Verifique se o Ollama está aberto e se o modelo llama3.2 está instalado.")
+        except ErroConsulta as erro:
+            if erro.categoria == 'recursos':
+                st.error("A consulta excedeu o limite de memória do DuckDB.")
+                st.info("Tente uma pergunta que exija menos processamento.")
+            else:
+                st.error("Não foi possível preparar ou executar a consulta gerada.")
+                st.info("Confira a pergunta e os formatos dos dados e tente novamente.")
