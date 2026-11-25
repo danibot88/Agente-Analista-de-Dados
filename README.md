@@ -29,7 +29,7 @@ ollama pull llama3.2
 ## Executar no Windows
 
 1. Abra o Ollama e mantenha-o em execução.
-2. Dê dois cliques em `iniciar_local.bat`. Na primeira execução, ele cria um ambiente virtual `.venv` na pasta do projeto e instala as dependências.
+2. Dê dois cliques em `iniciar_local.bat`. Ele cria o ambiente virtual `.venv` se necessário e instala as dependências se as importações falharem.
 3. Mantenha a janela do terminal aberta enquanto usa o aplicativo. O navegador deve abrir automaticamente.
 4. Envie um arquivo CSV ou XLSX e faça uma pergunta sobre os dados.
 
@@ -62,9 +62,9 @@ Estão pendentes a seleção de aba Excel (T07), o histórico de perguntas por b
 - O aplicativo lê a primeira aba de arquivos Excel. A prévia mostra até 100 linhas, mas as consultas usam todas as linhas carregadas.
 - Para CSV, é possível ajustar o separador, a codificação e o separador decimal.
 - O perfil examina as primeiras 1.000 linhas e 50 colunas, mostrando tipos, ausências, resumos e possíveis números ou datas em texto. Esses indícios não alteram os dados nem garantem que a conversão seja correta. Nomes no perfil são limitados a 100 caracteres.
-- O perfil fica em uma seção recolhida. Quando o Ollama gera SQL, ele recebe a pergunta e o perfil limitado, incluindo nomes, tipos, contagens e resumos numéricos ou de datas, mas não exemplos de texto. Esses dados podem ser sensíveis.
+- O perfil fica em uma seção recolhida. Na geração de SQL, o Ollama recebe a pergunta sem truncamento pela aplicação e o perfil limitado, incluindo nomes, tipos, contagens e resumos numéricos ou de datas. O perfil não inclui exemplos de texto. A pergunta e o perfil podem conter informações sensíveis.
 - Cada pergunta é independente. A consulta gerada é limitada a projeções, contagens e agregações simples, com filtros textuais diretos e sem conversões arbitrárias; solicitações incompatíveis podem ser recusadas.
-- Após executar a consulta, o aplicativo pede ao Ollama que selecione até três linhas e monta a resposta com os valores efetivamente retornados. A seleção pode não responder completamente à pergunta; confira a tabela e o SQL.
+- Após executar uma consulta com resultado não vazio, o aplicativo pede ao Ollama que selecione até três linhas e monta a resposta com os valores retornados. Para resultado vazio, exibe uma mensagem local. Confira a tabela e o SQL para avaliar se a seleção responde à pergunta.
 - Para essa seleção, são enviados ao Ollama local a pergunta (até 2.000 caracteres), o SQL (até 4.000), os nomes e valores de até 10 linhas e 8 colunas do resultado (até 120 caracteres por campo). O aplicativo avisa quando o contexto ou resultado é parcial. Esses dados podem ser sensíveis.
 - As consultas são executadas em um banco DuckDB em memória. O aplicativo limita a exibição a 1.000 linhas de resultado.
 - Cada conexão DuckDB é configurada com `memory_limit` de 256 MB, até duas threads e tamanho máximo de arquivos temporários de 0 bytes. Se o DuckDB informar falta de memória, a análise é interrompida e a interface mostra um erro específico.

@@ -20,7 +20,7 @@ Este arquivo é o quadro de trabalho do plano aprovado. Um coordenador atualiza 
 
 - Estado: Concluída. Dependências: T02.
 - Gerar perfil limitado com nomes, tipos, contagens, ausências e resumos apropriados; sinalizar indícios de números ou datas como texto sem converter silenciosamente. Definir limites e evitar expor valores privados desnecessários.
-- Aceite: perfil útil e limitado está disponível em seção recolhida por padrão; testes cobrem dados ausentes, tipos e casos ambíguos; texto explica que amostras e estatísticas selecionadas podem ser enviadas ao Ollama local.
+- Aceite: perfil limitado em seção recolhida por padrão. Os testes cobrem dados ausentes, tipos e casos ambíguos. Na geração de SQL, a interface informa que nomes e estatísticas do perfil podem ser enviados ao Ollama local. O perfil não contém amostras de texto.
 
 ### T04 — Contexto para gerar SQL
 
@@ -72,3 +72,4 @@ Este arquivo é o quadro de trabalho do plano aprovado. Um coordenador atualiza 
 | T07–T09 | A definir | Pendentes. |
 | T01–T06 — finalização | Codex | Suíte básica com 54 aprovados e um opcional ignorado. Exemplo conferido por script com Ollama local após ajustar o contexto SQL. Teste no navegador adiado pelo usuário. Ver `docs/TESTES.md`. |
 | T06 — revisão de privacidade | Codex | Teste opcional usa CSV sintético em memória. Suíte básica e integração com Ollama aprovadas. Metadados locais removidos dos arquivos mantidos no projeto. Ver `docs/TESTES.md`. |
+| T06 — alinhamento da documentação | Codex | Estrutura, caminhos de consulta e limites do contexto conferidos com a implementação. Links locais verificados e suíte básica aprovada. Ver `docs/TESTES.md`. |

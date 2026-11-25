@@ -107,3 +107,10 @@ Tarefa: revisão de privacidade dos arquivos publicados
 Comandos: `.\.venv\Scripts\python.exe -B -m unittest discover -s tests -q`, `.\.venv\Scripts\python.exe -B -m pip check`, `.\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_ollama_local.py -v` com `DATAAGENT_TESTE_OLLAMA=1`, e `git diff --check`.
 Resultado: 54 testes aprovados na suíte básica e um opcional ignorado. Dependências verificadas. O teste opcional passou separadamente com Ollama e CSV sintético em memória, conferindo a contagem total, a contagem com filtro e o SQL executado.
 Limitação: teste manual no navegador segue adiado.
+
+Data: 25/11/2026
+Tarefa: alinhamento da documentação do projeto
+Verificação: revisão dos cinco arquivos Markdown versionados, conferência dos links relativos e da âncora dos comandos de conversão, e `git diff --check`.
+Comando: `.\.venv\Scripts\python.exe -B -m unittest discover -s tests -q` com `DATAAGENT_TESTE_OLLAMA=0`.
+Resultado: 54 testes aprovados e um opcional ignorado. Links e diff verificados.
+Limitação: revisão exclusivamente documental. A integração com Ollama real e o teste manual no navegador ficaram fora desta rodada.
