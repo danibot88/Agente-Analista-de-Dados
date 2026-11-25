@@ -88,3 +88,16 @@ Resultado: 54 testes aprovados e um teste opcional ignorado. Verificados configu
 Verificação de recursos: consulta sintética com limite de DuckDB reduzido a 16 MB provocou erro real de memória e foi tratada como `recursos`. Com o padrão de 256 MB, consultas sintéticas distintas de maior volume terminaram sem atingir o limite; isso não estabelece limite de tempo nem de memória total.
 Verificação integrada manual: script Python executado na .venv com o CSV de exemplo, DuckDB e Ollama local confirmou SQL, totais esperados e resposta. A primeira tentativa excedeu o prazo de 30 segundos do cliente de teste; a segunda, com prazo de 60 segundos, passou.
 Limitações: não foi feito teste manual no navegador. Não há limite de tempo de consulta, nem teto para o consumo total do processo, pandas, Streamlit ou Ollama; a memória gerenciada pelo DuckDB tem limite de 256 MB e os arquivos temporários do DuckDB estão limitados a 0 bytes. A seleção de linhas e o SQL gerados pelo modelo podem não corresponder à intenção do usuário.
+
+Data: 04/11/2026
+Tarefa: avaliação do estado do projeto e atualização da documentação
+Comando: .\.venv\Scripts\python.exe -m unittest discover -s tests -q
+Resultado: 54 testes aprovados e um teste opcional com Ollama ignorado. O teste do exemplo CSV está incluído na suíte. Revisados o quadro de tarefas, o README e os limites documentados; a alteração é apenas documental.
+Limitações: Ollama real e fluxo manual no navegador não foram executados nesta avaliação. A suíte usa dados sintéticos e não comprova que o modelo gere SQL semanticamente correto para perguntas arbitrárias.
+
+Data: 25/11/2026
+Tarefa: finalização de T01–T06
+Comandos: `.\.venv\Scripts\python.exe -m unittest discover -s tests -q`, `.\.venv\Scripts\python.exe -m pip check` e `.\.venv\Scripts\python.exe -m compileall -q app_local.py dataagent tests`.
+Resultado: 54 testes aprovados e um opcional ignorado. Dependências e compilação verificadas com Python 3.14.7.
+Integração: `ollama list` confirmou `llama3.2:latest`. Um script executado com `.\.venv\Scripts\python.exe -X utf8 -` chamou `ler_arquivo`, `analisar` e `responder` com `exemplo.csv`, separador `;`, decimal `,` e a pergunta do README. As primeiras verificações encontraram SQL inválido ou sem identificação do produto. Após o ajuste no contexto, o SQL executado agrupou por produto e retornou Café 220,50 e Chá 80,00. A etapa de resposta retornou texto sem aviso.
+Limitações: teste manual no navegador adiado a pedido do usuário. O teste opcional com a planilha privada permaneceu desativado. O resultado do exemplo não garante a qualidade de consultas arbitrárias.

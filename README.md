@@ -51,6 +51,12 @@ Envie o arquivo `exemplo.csv`. Em **Configurações do CSV**, escolha `;` como s
 
 O resultado esperado é **Café: 220,50** e **Chá: 80,00**.
 
+## Estado do projeto
+
+A entrega inicial do plano, tarefas T01 a T06, está concluída: o aplicativo possui serviços separados, perfil limitado, geração e execução de SQL, resposta baseada em linhas do resultado e limites de recursos no DuckDB. A resposta textual é uma seleção de linhas, não uma interpretação completa garantida. O plano e as evidências estão em [TASKS.md](TASKS.md), [docs/ARQUITETURA.md](docs/ARQUITETURA.md) e [docs/TESTES.md](docs/TESTES.md).
+
+Estão pendentes a seleção de aba Excel (T07), o histórico de perguntas por base (T08) e gráficos e exportação (T09). A ordem de implementação dessas funcionalidades ainda depende de priorização. O fluxo integrado com Ollama foi verificado por script com o CSV de exemplo. O teste manual no navegador ficou para uma rodada posterior.
+
 ## Como funciona e limitações
 
 - O aplicativo lê a primeira aba de arquivos Excel. A prévia mostra até 100 linhas, mas as consultas usam todas as linhas carregadas.

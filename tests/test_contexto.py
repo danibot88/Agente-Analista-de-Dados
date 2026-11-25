@@ -39,6 +39,11 @@ class ContextoTests(unittest.TestCase):
         self.assertEqual(6, total.dados.iloc[0]['total'])
         self.assertIn('Perfil limitado', modelo.mensagens[1]['content'])
         self.assertNotIn('invalido', modelo.mensagens[1]['content'])
+        nomes, metadados, _ = modelo.mensagens[1]['content'].splitlines()
+        self.assertEqual(['id', 'moeda', 'valor', 'data'], json.loads(nomes.split(': ', 1)[1]))
+        perfil = json.loads(metadados.split(': ', 1)[1])
+        self.assertEqual([0, 1, 1, 1], [coluna['Ausentes'] for coluna in perfil])
+        self.assertTrue(all('Coluna' not in coluna for coluna in perfil))
         grupos = analisar(self.df, 'Contar por moeda', Modelo({'sql': 'SELECT moeda, COUNT(*) AS total FROM uploaded_data GROUP BY moeda ORDER BY total DESC', 'explicacao': ''}))
         self.assertEqual(6, grupos.dados['total'].sum())
 
