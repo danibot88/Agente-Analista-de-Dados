@@ -71,3 +71,4 @@ Este arquivo é o quadro de trabalho do plano aprovado. Um coordenador atualiza 
 | T06 | Codex | Limite de memória do DuckDB, threads e armazenamento temporário configurados; 54 testes aprovados e um opcional ignorado; integração com Ollama e CSV de exemplo aprovada. Sem limite de tempo e sem teto para memória total do processo; ver `docs/TESTES.md`. |
 | T07–T09 | A definir | Pendentes. |
 | T01–T06 — finalização | Codex | Suíte básica com 54 aprovados e um opcional ignorado. Exemplo conferido por script com Ollama local após ajustar o contexto SQL. Teste no navegador adiado pelo usuário. Ver `docs/TESTES.md`. |
+| T06 — revisão de privacidade | Codex | Teste opcional usa CSV sintético em memória. Suíte básica e integração com Ollama aprovadas. Metadados locais removidos dos arquivos mantidos no projeto. Ver `docs/TESTES.md`. |
