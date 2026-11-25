@@ -73,3 +73,4 @@ Este arquivo é o quadro de trabalho do plano aprovado. Um coordenador atualiza 
 | T01–T06 — finalização | Codex | Suíte básica com 54 aprovados e um opcional ignorado. Exemplo conferido por script com Ollama local após ajustar o contexto SQL. Teste no navegador adiado pelo usuário. Ver `docs/TESTES.md`. |
 | T06 — revisão de privacidade | Codex | Teste opcional usa CSV sintético em memória. Suíte básica e integração com Ollama aprovadas. Metadados locais removidos dos arquivos mantidos no projeto. Ver `docs/TESTES.md`. |
 | T06 — alinhamento da documentação | Codex | Estrutura, caminhos de consulta e limites do contexto conferidos com a implementação. Links locais verificados e suíte básica aprovada. Ver `docs/TESTES.md`. |
+| T06 — checklist de revisão e publicação | Codex | Fluxo de auditoria, revisão de privacidade antes do push e conferência do PR registrados em `AGENTS.md`. Ver `docs/TESTES.md`. |

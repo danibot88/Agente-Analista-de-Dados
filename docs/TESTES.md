@@ -114,3 +114,9 @@ Verificação: revisão dos cinco arquivos Markdown versionados, conferência do
 Comando: `.\.venv\Scripts\python.exe -B -m unittest discover -s tests -q` com `DATAAGENT_TESTE_OLLAMA=0`.
 Resultado: 54 testes aprovados e um opcional ignorado. Links e diff verificados.
 Limitação: revisão exclusivamente documental. A integração com Ollama real e o teste manual no navegador ficaram fora desta rodada.
+
+Data: 25/11/2026
+Tarefa: checklist de revisão e publicação
+Verificações: `git diff --check` e leitura do diff para conferir os três passos e o escopo documental.
+Resultado: checklist incluído em `AGENTS.md`.
+Limitação: a suíte não foi executada nesta tarefa porque a mudança afeta apenas as orientações de trabalho.
