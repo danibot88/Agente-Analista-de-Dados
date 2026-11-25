@@ -47,7 +47,7 @@ Limitações: não houve teste manual no navegador ou com Ollama real. O modelo 
 Data: 30/10/2026
 Tarefa: investigação de consultas sem resposta — T04
 Resultado: reproduzida a rejeição indevida de COUNT(*) pelo validador. Corrigida a representação count_star do parser DuckDB. Suíte em cópia de trabalho: 30 testes aprovados, incluindo contagens e rejeição de SQL múltiplo e filtros em agregação.
-Verificação integrada: pergunta de contagem na planilha local com Ollama real retornou 13.500 linhas após três tentativas, usando código corrigido em cópia de trabalho. O arquivo foi somente lido.
+Verificação integrada: a contagem total com Ollama real bateu com o valor esperado após três tentativas, usando código corrigido em cópia de trabalho. A base foi somente lida.
 Limitações: a T04 ainda restringe filtros, LIMIT e COUNT DISTINCT e não cobre todas as perguntas sugeridas. Não foi executado teste no navegador após a correção.
 
 Data: 30/10/2026
@@ -71,7 +71,7 @@ Limitações: ponto flutuante pode produzir soma aproximada; datetime é agrupad
 Data: 30/10/2026
 Tarefa: revisão final da T04
 Comandos: python -m unittest discover -s tests -v; DATAAGENT_TESTE_OLLAMA=1 com test_ollama_local.py (na .venv do projeto).
-Resultado: 44 testes padrão aprovados e um opcional ignorado; teste integrado opcional com Ollama real aprovado, com 13.500 linhas e 2.950 registros EUR. Repetidos exemplos sintéticos de soma numérica e contagem de datas tipadas com ausências. O teste integrado verificou o hash da planilha antes e depois da leitura.
+Resultado: 44 testes padrão aprovados e um opcional ignorado. O teste integrado opcional com Ollama real confirmou a contagem total e a contagem com filtro. Repetidos exemplos sintéticos de soma numérica e contagem de datas tipadas com ausências. O teste integrado verificou o hash da base antes e depois da leitura.
 Limitações: não houve teste no navegador; o modelo pode gerar SQL que não corresponde à pergunta. Conversões com filtros seguem não suportadas; comandos de escopo completo exigem sintaxe exata. Ponto flutuante pode ser aproximado.
 
 Data: 04/11/2026
@@ -101,3 +101,9 @@ Comandos: `.\.venv\Scripts\python.exe -m unittest discover -s tests -q`, `.\.ven
 Resultado: 54 testes aprovados e um opcional ignorado. Dependências e compilação verificadas com Python 3.14.7.
 Integração: `ollama list` confirmou `llama3.2:latest`. Um script executado com `.\.venv\Scripts\python.exe -X utf8 -` chamou `ler_arquivo`, `analisar` e `responder` com `exemplo.csv`, separador `;`, decimal `,` e a pergunta do README. As primeiras verificações encontraram SQL inválido ou sem identificação do produto. Após o ajuste no contexto, o SQL executado agrupou por produto e retornou Café 220,50 e Chá 80,00. A etapa de resposta retornou texto sem aviso.
 Limitações: teste manual no navegador adiado a pedido do usuário. O teste opcional com a planilha privada permaneceu desativado. O resultado do exemplo não garante a qualidade de consultas arbitrárias.
+
+Data: 25/11/2026
+Tarefa: revisão de privacidade dos arquivos publicados
+Comandos: `.\.venv\Scripts\python.exe -B -m unittest discover -s tests -q`, `.\.venv\Scripts\python.exe -B -m pip check`, `.\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_ollama_local.py -v` com `DATAAGENT_TESTE_OLLAMA=1`, e `git diff --check`.
+Resultado: 54 testes aprovados na suíte básica e um opcional ignorado. Dependências verificadas. O teste opcional passou separadamente com Ollama e CSV sintético em memória, conferindo a contagem total, a contagem com filtro e o SQL executado.
+Limitação: teste manual no navegador segue adiado.

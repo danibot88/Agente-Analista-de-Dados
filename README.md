@@ -103,7 +103,7 @@ Para executar os testes automatizados no PowerShell, após instalar as dependên
 
 Os testes usam arquivos sintéticos e o `exemplo.csv`, simulam a interface e o cliente Ollama, verificam os serviços isoladamente e executam consultas no DuckDB real. Não exigem o serviço Ollama. Eles não substituem uma verificação manual no navegador com o modelo local.
 
-Para a verificação opcional com `llama3.2:latest` no Ollama e a planilha local esperada em `dados_locais`, execute:
+Para a verificação opcional com `llama3.2:latest` no Ollama local, execute:
 
 ```powershell
 $env:DATAAGENT_TESTE_OLLAMA = '1'
@@ -111,4 +111,4 @@ $env:DATAAGENT_TESTE_OLLAMA = '1'
 Remove-Item Env:DATAAGENT_TESTE_OLLAMA
 ```
 
-O teste lê a planilha sem modificá-la, verifica as contagens e o SQL executado e exige o arquivo e o serviço locais. Os dados são enviados ao processo Ollama conforme o perfil documentado; o teste padrão permanece independente do serviço.
+O teste usa um CSV sintético em memória e verifica o total de linhas, a contagem com filtro e o SQL executado. A suíte padrão permanece independente do Ollama.
